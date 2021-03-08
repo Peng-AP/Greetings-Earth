@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>title</title>
+	<script>
+var Board = [
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", ""]
+];
+var extreme = 1000000;
+var diff = 0;
+var comp = 0;
+var win = false;
+var gameStart = false;
+
+
+function computerPlay(){
+	if(diff === 0){
+		alert("select a difficulty first!");
+		return 0;
+	}
+	gameStart = true;
+	if(Score(Board) === 1000000 || Score(Board) === -1000000){return 0;}
+	document.getElementById("Status").innerHTML = "computer is thinking..."
+	setTimeout(function(){
+		let a = max(Board,diff);
+		console.log("Computer played row " + a[1][0].toString() + " column " + a[1][1].toString())
+		Board[a[1][0]][a[1][1]] = "X";
+		document.getElementById(a[1][1].toString()+a[1][0].toString()).style.background = "Red";
+		Board = prepBoard(Board,a[1][1]);
+		for(var i = 0; i < 6; i++){
+			console.log(Board[i])
+		}
+		var copy = comp;
+		comp = 1;
+		document.getElementById("Status").innerHTML = "S: " + Score(Board);
+		comp = 2;
+		document.getElementById("Status").innerHTML += " M: " + Score(Board);
+		comp = 3;
+		document.getElementById("Status").innerHTML += " C: " + Score(Board);
+		comp = copy;
+		document.getElementById("Status").innerHTML += "  Prediction: " + a[0].toString();
+	},500);
+	
+	
+}
+
+
+function selectComp(x){
+	comp = x;
+	if(x === 1){
+		document.getElementById("Simp").style.background = "yellow";
+		document.getElementById("Med").style.background = "white";
+		document.getElementById("Comp").style.background = "white";
+	}
+	else if(x === 2){
+		document.getElementById("Simp").style.background = "white";
+		document.getElementById("Med").style.background = "yellow";
+		document.getElementById("Comp").style.background = "white";
+	}
+	else{
+		document.getElementById("Simp").style.background = "white";
+		document.getElementById("Med").style.background = "white";
+		document.getElementById("Comp").style.background = "yellow";
+	}
+}
+
+
+function selectDiff(d){
+	diff = d;
+	if(d === 1){
+		document.getElementById("Easy").style.background = "lightGreen";
+		document.getElementById("Moderate").style.background = "white";
+		document.getElementById("Difficult").style.background = "white";
+	}
+	else if(d === 3){
+		document.getElementById("Easy").style.background = "white";
+		document.getElementById("Moderate").style.background = "orange";
+		document.getElementById("Difficult").style.background = "white";
+	}
+	else{
+		document.getElementById("Easy").style.background = "white";
+		document.getElementById("Moderate").style.background = "white";
+		document.getElementById("Difficult").style.background = "red";
+	}
+}
+
+for(let i = 0;i < 7;i++){
+	Board = prepBoard(Board,i)
+}
+//console.log(Score(Board));
+//console.log(Score(Board));
+/*
+Board = prepBoard(Board)
+for(let i = 0; i < 6; i++){
+	console.log(Board[i])
+}
+*/
+/*
+let a = maxScore(Board);
+Board[a[0]][a[1]] = "X";
+document.getElementById(a[1].toString()+a[0].toString()).style.background = "Red";
+*/
+//console.log(max(Board,1))
+document.getElementById("Status").innerHTML = "Your turn"
+function dropPin(num){
+	if(diff === 0){
+		alert("select a difficulty first!");
+		return 0;
+	}
+	gameStart = true;
+	if(Score(Board) === 1000000 || Score(Board) === -1000000){return 0;}
+	let row = getRow(num);
+	Board[row][num] = "Y";
+	document.getElementById(num.toString()+row.toString()).style.background = "Yellow";
+	console.log("The Human went row " + row.toString() + " column " + num.toString())
+	document.getElementById("Status").innerHTML = "computer is thinking..."
+	setTimeout(function(){
+		let a = max(Board,diff);
+		console.log("Computer played row " + a[1][0].toString() + " column " + a[1][1].toString())
+		Board[a[1][0]][a[1][1]] = "X";
+		document.getElementById(a[1][1].toString()+a[1][0].toString()).style.background = "Red";
+		Board = prepBoard(Board,a[1][1]);
+		for(var i = 0; i < 6; i++){
+			console.log(Board[i])
+		}
+		var copy = comp;
+		comp = 1;
+		document.getElementById("Status").innerHTML = "S: " + Score(Board);
+		comp = 2;
+		document.getElementById("Status").innerHTML += " M: " + Score(Board);
+		comp = 3;
+		document.getElementById("Status").innerHTML += " C: " + Score(Board);
+		comp = copy;
+		document.getElementById("Status").innerHTML += "  Prediction: " + a[0].toString();
+	},500);
+	
+	
+}
+
+function max(board,depth){
+	let alpha = -1000001;
+	let score = Score(board);
+	let avail = getEmpty(board);
+	let copy = [...board]
+	let winning = [];
+	if(depth === 0 || score === 1000000 || score === -1000000 || avail.length === 0){
+		return [score];
+	}
+	else{
+		for(let i = 0; i < avail.length;i++){
+			let column = avail[i]
+			let row = getRow(column);
+			copy[row][column] = "X";
+			copy = prepBoard(copy,column);
+			let beta = min(copy,depth-1)[0];
+			if(beta > alpha){
+				alpha = beta
+				winning = [row,column]
+			}
+			copy[row][column] = "";
+		}
+	}
+	return [alpha,winning]
+}
+
+function min(board,depth){
+	let alpha = 1000001;
+	let score = Score(board);
+	let avail = getEmpty(board);
+	let copy = [...board]
+	let winning = [];
+	if(depth === 0 || score === 1000000 || score === -1000000 || avail.length === 0){
+		return [score];
+	}
+	else{
+		for(let i = 0; i < avail.length;i++){
+			let column = avail[i]
+			let row = getRow(column,column);
+			copy[row][column] = "Y";
+			copy = prepBoard(copy);
+			let beta = max(copy,depth-1)[0];
+			if(beta < alpha){
+				alpha = beta
+				winning = [row,column]
+			}
+			copy[row][column] = "";
+		}
+	}
+	return [alpha,winning]
+}
+
+function reset(){
+	Board = [
+		["", "", "", "", "", "", ""],
+		["", "", "", "", "", "", ""],
+		["", "", "", "", "", "", ""],
+		["", "", "", "", "", "", ""],
+		["", "", "", "", "", "", ""],
+		["", "", "", "", "", "", ""]
+	];
+	win = false;
+	gameStart = false;
+	for (var a = 0; a < 6; a++) {
+		for (var b = 0; b < 7; b++) {
+			document.getElementById(b.toString() + a.toString()).style.background = "white";
+		}
+	}
+}
+
+function getEmpty(board) {
+  let ret = []
+  for (var i = 0; i < 7; i++) {
+    if (board[0][i] != "X" && board[0][i] != "Y") {
+      ret.push(i)
+    }
+  }
+  return ret
+}
+
+
+
+function getRow(column) {
+  for (var i = 5; i > -1; i--) {
+    if (Board[i][column] != "X" && Board[i][column] != "Y") {
+      return i;
+    }
+  }
+}
+
+
+function prepBoard(board,column){
+	let counter = 1;
+	for(let j = 5; j > -1; j--){
+		if(board[j][column] != "X" && board[j][column] != "Y"){
+			board[j][column] = counter;
+			counter++;
+		}
+	}
+	return board;
+}
+
+function scorePosition1(row, column, delta_y, delta_x,board) {
+    var human_points = 0;
+    var computer_points = 0;
+
+    // Save winning positions to arrays for later usage
+
+    // Determine score through amount of available chips
+    for (var i = 0; i < 4; i++) {
+        if (board[row][column] == "Y") {
+            human_points++; // Add for each human chip
+        } else if (board[row][column] == "X") {
+            computer_points++; // Add for each computer chip
+        }
+
+        // Moving through our board
+        row += delta_y;
+        column += delta_x;
+    }
+
+    // Marking winning/returning score
+    if (human_points == 4) {
+        return -1000000;
+    } else if (computer_points == 4) {
+        return 1000000;
+    } else {
+        // Return normal points
+        return computer_points-human_points;
+    }
+}
+
+function scorePosition3(row, column, delta_y, delta_x,board) {
+	var human_counter = 0;
+	var computer_counter = 0;
+	var arr = [];
+	var human_points = 0;
+	var computer_points = 0;
+	// Determine score through amount of available chips
+	for (var i = 0; i < 4; i++) {
+	arr.push(board[row][column])
+	if(arr[i] === "X"){computer_counter++;}
+	else if(arr[i] === "Y"){human_counter++;}
+	row += delta_y;
+	column += delta_x;
+	}
+	if(human_counter === 0 && computer_counter > 0){
+		for(var i = 0; i < 4; i++){
+			if(arr[i] != "X" && arr[i] != "Y"){
+				computer_points += (6-arr[i]*1.5)/2
+			}
+			else{computer_points += 6**computer_counter}
+		}
+	} else if(computer_counter === 0 && human_counter > 0){
+		for(var i = 0; i < 4; i++){
+			if(arr[i] != "X" && arr[i] != "Y"){
+				human_points += (6-arr[i]*1.5)/2
+			}
+			else {human_points += 6**human_counter}
+		}
+	}
+	
+  // Marking winning/returning score
+  if (human_counter === 4) {
+    // Computer won (100000)
+    return -extreme;
+  } else if (computer_counter === 4) {
+    // Human won (-100000)
+    return extreme;
+  } else {
+    // Return normal points
+    return computer_points-human_points;
+  }
+}
+function scorePosition2(row, column, delta_y, delta_x,board) {
+	var human_counter = 0;
+	var computer_counter = 0;
+	var arr = [];
+	var human_points = 0;
+	var computer_points = 0;
+	// Determine score through amount of available chips
+	for (var i = 0; i < 4; i++) {
+		arr.push(board[row][column])
+		if(arr[i] === "X"){computer_counter++;}
+		else if(arr[i] === "Y"){human_counter++;}
+		row += delta_y;
+		column += delta_x;
+	}
+	if(human_counter === 0){
+		computer_points += (2**computer_counter)
+	}
+	if(computer_counter === 0){
+		human_points += (2**human_counter)
+	}
+	
+  // Marking winning/returning score
+  if (human_counter === 4) {
+    // Computer won (100000)
+    return -extreme;
+  } else if (computer_counter === 4) {
+    // Human won (-100000)
+    return extreme;
+  } else {
+    // Return normal points
+    return computer_points-human_points;
+  }
+}
+
+function scorePosition(row,column,delta_y,delta_x,board){
+	if(comp === 1){
+		return scorePosition1(row,column,delta_y,delta_x,board);
+	}
+	else if(comp === 2){
+		return scorePosition2(row,column,delta_y,delta_x,board);
+	}
+	else if(comp === 3){
+		return scorePosition3(row,column,delta_y,delta_x,board);
+	}
+}
+
+function Score(board) {
+  var points = 0;
+
+  var vertical_points = 0;
+  var horizontal_points = 0;
+  var diagonal_points1 = 0;
+  var diagonal_points2 = 0;
+
+  // Board-size: 7x6 (height x width)
+  // Array indices begin with 0
+  // => e.g. height: 0, 1, 2, 3, 4, 5
+
+  // Vertical points
+  // Check each column for vertical score
+  // 
+  // Possible situations
+  //  0  1  2  3  4  5  6
+  // [x][ ][ ][ ][ ][ ][ ] 0
+  // [x][x][ ][ ][ ][ ][ ] 1
+  // [x][x][x][ ][ ][ ][ ] 2
+  // [x][x][x][ ][ ][ ][ ] 3
+  // [ ][x][x][ ][ ][ ][ ] 4
+  // [ ][ ][x][ ][ ][ ][ ] 5
+	//console.log("got here")
+  for (var row = 0; row < 3; row++) {
+    // Check columns
+    for (var column = 0; column < 7; column++) {
+      // score each column and row
+      var score = scorePosition(row, column, 1, 0,board);
+      if (score == extreme) return extreme;
+      if (score == -extreme) return -extreme;
+      vertical_points += score;
+    }
+  }
+	
+  // Horizontal points
+  // Check each row's score
+  // 
+  // Possible situations
+  //  0  1  2  3  4  5  6
+  // [x][x][x][x][ ][ ][ ] 0
+  // [ ][x][x][x][x][ ][ ] 1
+  // [ ][ ][x][x][x][x][ ] 2
+  // [ ][ ][ ][x][x][x][x] 3
+  // [ ][ ][ ][ ][ ][ ][ ] 4
+  // [ ][ ][ ][ ][ ][ ][ ] 5
+  for (var row = 0; row < 6; row++) {
+    for (var column = 0; column < 4; column++) {
+      var score = scorePosition(row, column, 0, 1,board);
+      if (score == extreme) return extreme;
+      if (score == -extreme) return -extreme;
+      horizontal_points += score;
+    }
+  }
+	
+
+
+  // Diagonal points 1 (left-bottom)
+  //
+  // Possible situation
+  //  0  1  2  3  4  5  6
+  // [x][ ][ ][ ][ ][ ][ ] 0
+  // [ ][x][ ][ ][ ][ ][ ] 1
+  // [ ][ ][x][ ][ ][ ][ ] 2
+  // [ ][ ][ ][x][ ][ ][ ] 3
+  // [ ][ ][ ][ ][ ][ ][ ] 4
+  // [ ][ ][ ][ ][ ][ ][ ] 5
+  for (var row = 0; row < 3; row++) {
+    for (var column = 0; column < 4; column++) {
+      var score = scorePosition(row, column, 1, 1,board);
+      if (score == extreme) return extreme;
+      if (score == -extreme) return -extreme;
+      diagonal_points1 += score;
+    }
+  }
+	
+  // Diagonal points 2 (right-bottom)
+  //
+  // Possible situation
+  //  0  1  2  3  4  5  6
+  // [ ][ ][ ][x][ ][ ][ ] 0
+  // [ ][ ][x][ ][ ][ ][ ] 1
+  // [ ][x][ ][ ][ ][ ][ ] 2
+  // [x][ ][ ][ ][ ][ ][ ] 3
+  // [ ][ ][ ][ ][ ][ ][ ] 4
+  // [ ][ ][ ][ ][ ][ ][ ] 5
+  for (var row = 3; row < 6; row++) {
+    for (var column = 0; column <= 3; column++) {
+      var score = scorePosition(row, column, -1, +1,board);
+      if (score == extreme) return extreme;
+      if (score == -extreme) return -extreme;
+      diagonal_points2 += score;
+    }
+
+  }
+  //console.log(horizontal_points,vertical_points, diagonal_points2 , diagonal_points1)
+  points = horizontal_points + vertical_points + diagonal_points1 + diagonal_points2;
+  //console.log(horizontal_points,vertical_points,diagonal_points1,diagonal_points2)
+  return points;
+}
+	</script>
+	<style>
+	.board {
+	width: 740px;
+	height: 630px;
+	background-color: blue;
+}
+
+input {
+	width: 100px;
+	height: 100px;
+	margin: 0px;
+	border-radius: 50%;
+	background-color: white;
+	font-size: 16px;
+	transition-duration: 0s;
+}
+input:hover {
+	color: blue;
+}
+
+.Difficulty {
+	width: 90px;
+	height: 100px;
+	background-color: white;
+	transition-duration: 0s;
+}
+.difficulty:hover {
+	color: orange;
+}
+
+.reset {
+	width: 100px;
+	height: 100px;
+	background-color: red;
+	color: white;
+	font-weight: bold;
+}
+.status{
+	font-size: 20px;
+}
+	</style>
+  </head>
+  <body>
+	<div class = "board">
+
+<Input type = "Button" id = "00" onclick = "dropPin(0)" value = ""></Input>
+<Input type = "Button" id = "10" onclick = "dropPin(1)" value = ""></Input>
+<Input type = "Button" id = "20" onclick = "dropPin(2)" value = ""></Input>
+<Input type = "Button" id = "30" onclick = "dropPin(3)" value = ""></Input>
+<Input type = "Button" id = "40" onclick = "dropPin(4)" value = ""></Input>
+<Input type = "Button" id = "50" onclick = "dropPin(5)" value = ""></Input>
+<Input type = "Button" id = "60" onclick = "dropPin(6)" value = ""></Input>
+
+<Input type = "Button" id = "01" onclick = "dropPin(0)" value = ""></Input>
+<Input type = "Button" id = "11" onclick = "dropPin(1)" value = ""></Input>
+<Input type = "Button" id = "21" onclick = "dropPin(2)" value = ""></Input>
+<Input type = "Button" id = "31" onclick = "dropPin(3)" value = ""></Input>
+<Input type = "Button" id = "41" onclick = "dropPin(4)" value = ""></Input>
+<Input type = "Button" id = "51" onclick = "dropPin(5)" value = ""></Input>
+<Input type = "Button" id = "61" onclick = "dropPin(6)" value = ""></Input>
+
+<Input type = "Button" id = "02" onclick = "dropPin(0)" value = ""></Input>
+<Input type = "Button" id = "12" onclick = "dropPin(1)" value = ""></Input>
+<Input type = "Button" id = "22" onclick = "dropPin(2)" value = ""></Input>
+<Input type = "Button" id = "32" onclick = "dropPin(3)" value = ""></Input>
+<Input type = "Button" id = "42" onclick = "dropPin(4)" value = ""></Input>
+<Input type = "Button" id = "52" onclick = "dropPin(5)" value = ""></Input>
+<Input type = "Button" id = "62" onclick = "dropPin(6)" value = ""></Input>
+
+<Input type = "Button" id = "03" onclick = "dropPin(0)" value = ""></Input>
+<Input type = "Button" id = "13" onclick = "dropPin(1)" value = ""></Input>
+<Input type = "Button" id = "23" onclick = "dropPin(2)" value = ""></Input>
+<Input type = "Button" id = "33" onclick = "dropPin(3)" value = ""></Input>
+<Input type = "Button" id = "43" onclick = "dropPin(4)" value = ""></Input>
+<Input type = "Button" id = "53" onclick = "dropPin(5)" value = ""></Input>
+<Input type = "Button" id = "63" onclick = "dropPin(6)" value = ""></Input>
+
+<Input type = "Button" id = "04" onclick = "dropPin(0)" value = ""></Input>
+<Input type = "Button" id = "14" onclick = "dropPin(1)" value = ""></Input>
+<Input type = "Button" id = "24" onclick = "dropPin(2)" value = ""></Input>
+<Input type = "Button" id = "34" onclick = "dropPin(3)" value = ""></Input>
+<Input type = "Button" id = "44" onclick = "dropPin(4)" value = ""></Input>
+<Input type = "Button" id = "54" onclick = "dropPin(5)" value = ""></Input>
+<Input type = "Button" id = "64" onclick = "dropPin(6)" value = ""></Input>
+
+<Input type = "Button" id = "05" onclick = "dropPin(0)" value = ""></Input>
+<Input type = "Button" id = "15" onclick = "dropPin(1)" value = ""></Input>
+<Input type = "Button" id = "25" onclick = "dropPin(2)" value = ""></Input>
+<Input type = "Button" id = "35" onclick = "dropPin(3)" value = ""></Input>
+<Input type = "Button" id = "45" onclick = "dropPin(4)" value = ""></Input>
+<Input type = "Button" id = "55" onclick = "dropPin(5)" value = ""></Input>
+<Input type = "Button" id = "65" onclick = "dropPin(6)" value = ""></Input>
+
+</div>
+
+<div>
+
+<Input type = "Button" class = "Difficulty" value = "Easy" onclick = "selectDiff(1)" id = "Easy"></Input>
+<Input type = "Button" class = "Difficulty" value = "Moderate" onclick = "selectDiff(3)" id = "Moderate"></Input>
+<Input type = "Button" class = "Difficulty" value = "Difficult" onclick = "selectDiff(6)" id = "Difficult"></Input>
+<Input type = "Button" class = "reset" value = "RESET" onclick = "reset()" id = "Reset"></Input>
+<Input type = "Button" class = "Difficulty" value = "C First" onclick = "computerPlay()" ></input>
+
+</div>
+<Input type = "Button" class = "Difficulty" value = "Simple" onclick = "selectComp(1)" id = "Simp"></Input>
+<Input type = "Button" class = "Difficulty" value = "Medium" onclick = "selectComp(2)" id = "Med"></Input>
+<Input type = "Button" class = "Difficulty" value = "Complex" onclick = "selectComp(3)" id = "Comp"></Input>
+ <p id = "Status" class = "status">Pick a Difficulty!</p>
+  </body>
+</html>
