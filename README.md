@@ -1,4 +1,4 @@
-# My pLayground
+# My Playground
 
 For children, like me. I play around here, swinging from monkey bar to monkey bar.
 
